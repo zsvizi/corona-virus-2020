@@ -7,7 +7,9 @@ plt.style.use('ggplot')
 
 
 def model_seir(xs, t, ps):
-    """ Epidemic model"""
+    """
+    Epidemic model
+    """
     try:
         beta = ps['beta'].value
         alpha = ps['alpha'].value
