@@ -10,6 +10,7 @@ def model_seir(xs, t, ps):
     """
     Epidemic model
     """
+    t_star = 5
     try:
         beta = ps['beta'].value
         alpha = ps['alpha'].value
@@ -18,7 +19,12 @@ def model_seir(xs, t, ps):
         beta, alpha, gamma = ps
 
     s, e, i, r = xs
-    return [-beta*s*i, beta*s*i - alpha*e, alpha*e - gamma*i, gamma*i]
+    return [
+        -beta * (1 - min(0.61, 0.61/t_star * t)) * s * i,
+        beta * (1 - min(0.61, 0.61/t_star * t)) * s * i - alpha * e,
+        alpha * e - gamma * i,
+        gamma * i
+    ]
 
 
 def solution_seir(t, x0, ps):
@@ -35,14 +41,7 @@ def residual_seir(ps, ts, data):
     return (model - data).ravel()
 
 
-def seir_fit():
-    t = np.linspace(0, 50, 100)
-    x0 = np.array([100, 1, 0, 0])
-    beta, alpha, gamma = 0.8, 0.1, 0.1
-    true_params = np.array((beta, alpha, gamma))
-    data = solution_seir(t, x0, true_params)
-    data += np.random.normal(size=data.shape)
-    # set parameters including bounds
+def parameter_initialization(x0):
     params = Parameters()
     params.add('s0', value=float(x0[0]), vary=False)
     params.add('e0', value=float(x0[1]), vary=False)
@@ -51,13 +50,37 @@ def seir_fit():
     params.add('beta', value=0.2, min=0, max=3)
     params.add('alpha', value=0.05, min=0, max=1)
     params.add('gamma', value=0.05, min=0, max=1)
-    # fit model and find predicted values
+    return params
+
+
+def fit_and_predict(data, params, t):
     result = minimize(residual_seir, params, args=(t, data), method='leastsq')
     final = data + result.residual.reshape(data.shape)
+    return final, result
+
+
+def generate_data(t, x0):
+    beta, alpha, gamma = 0.8, 0.1, 0.1
+    true_params = np.array((beta, alpha, gamma))
+    data = solution_seir(t, x0, true_params)
+    data += np.random.normal(size=data.shape)
+    return data
+
+
+def seir_fit():
+    t = np.linspace(0, 50, 100)
+    x0 = np.array([100, 1, 0, 0])
+    # generate data
+    data = generate_data(t, x0)
+    # set parameters including bounds
+    params = parameter_initialization(x0)
+    # fit model and find predicted values
+    final, result = fit_and_predict(data, params, t)
     return data, final, result, t
 
 
 def main():
+    # fit to generated data
     data, final, result, t = seir_fit()
 
     # plot data and fitted curves
