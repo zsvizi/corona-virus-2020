@@ -5,7 +5,8 @@ import numpy as np
 
 from source.data_handling import load_data, generate_data
 from source.fit import fit_model, solve_model
-from source.model import R_0, number_of_E_compartments, number_of_I_compartments, EpidemicModel, chn_population
+from source.model import R_0, number_of_E_compartments, number_of_I_compartments, EpidemicModel, \
+    chn_population
 
 plt.style.use('ggplot')
 
@@ -46,15 +47,33 @@ def solve_orig_seir():
     model = EpidemicModel(init_values)
     x0 = np.array(model.get_initial_values())
     # Solve epidemic model
-    t = np.linspace(0, 31, 100000)
+    t = np.linspace(0, 32, 100000)
     solution = solve_model(t, x0, params, model)
     cumulative = solution[:, -1]
+    plot_cumulative(cumulative, t)
+    plot_all(solution, t)
+
+    init_for_control = print_endpoint(solution, cumulative, t)
+    return init_for_control
+
+
+def plot_cumulative(cumulative, t):
     plt.plot(t, cumulative, '-', linewidth=2)
+    plt.xlabel("Time (days)")
+    plt.ylabel("Cumulative number of infected cases")
     plt.savefig("..\\data\\solution_SEIR_orig.png", format="png")
     plt.savefig("..\\data\\solution_SEIR_orig.eps", format="eps")
     plt.show()
-    init_for_control = print_endpoint(solution, cumulative, t)
-    return init_for_control
+
+
+def plot_all(solution, t):
+    plt.plot(t, solution[:, 1:], linewidth=2)
+    plt.xlabel("Time (days)")
+    plt.ylabel("State values")
+    plt.legend(('E1(t)', 'E2(t)', 'I1(t)', 'I2(t)', 'I3(t)', 'R(t)', 'C(t)'), loc='upper left')
+    plt.savefig("..\\data\\solution_SEIR_orig_all.png", format="png")
+    plt.savefig("..\\data\\solution_SEIR_orig_all.eps", format="eps")
+    plt.show()
 
 
 def print_endpoint(solution, cumulative, t):

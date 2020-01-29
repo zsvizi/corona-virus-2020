@@ -7,7 +7,7 @@ import matplotlib.ticker as ticker
 
 from source.risk import get_heatmap
 
-
+# DIMENSIONS: r_stars x theta x z
 param = 0
 coords = [1, 2]
 vals = [1.05]
