@@ -1,31 +1,17 @@
 from lmfit import Parameters
-import numpy as np
 import copy
 number_of_S_compartments = 1
 number_of_E_compartments = 2
-number_of_I_compartments = 2
+number_of_I_compartments = 3
 number_of_R_compartments = 1
 chn_population = 1436980159
 R_0 = 2.6
 
 
-def get_init_values(data):
-    data_to_fit = np.diff(data[:, 1:2], axis=0)
-    # data_to_fit = data[:, 1:2]
-    init_values = {"e0": [data[4, 1] - data[2, 1], data[2, 1] - data[0, 1]],
-                   "i0": [0, data[0, 1]],
-                   "r0": [data[0, 2]]}
-    init_value_s = {"s0": [chn_population -
-                           (sum(init_values["e0"]) + sum(init_values["i0"]) + sum(init_values["r0"]))],
-                    "c0": [data_to_fit[0, 0]]}
-    init_values.update(init_value_s)
-    return init_values, data_to_fit
-
-
 class EpidemicModel:
     def __init__(self, init_values=None, t_star=None):
         if init_values is None:
-            init_values = {"s0": [100], "e0": [1, 0], "i0": [0, 0], "r0": [0], "c0": [0]}
+            init_values = {"s0": [100], "e0": [1, 0], "i0": [0, 0, 0], "r0": [0], "c0": [0]}
         self.susceptible = Susceptible(init_values["s0"])
         self.exposed = Exposed(init_values["e0"])
         self.infected = Infected(init_values["i0"])
@@ -46,19 +32,20 @@ class EpidemicModel:
             beta, alpha, gamma = ps
         # beta = R_0 * gamma / chn_population
 
-        s, e1, e2, i1, i2, r, c = xs
+        s, e1, e2, i1, i2, i3, r, c = xs
         if self.t_star is None:
             control = 1
         else:
             control = 1 - min(1 / R_0, 1 / R_0 / self.t_star * t)
         model_eq = [
-            -beta * control * s * (e1 + e2 + i1 + i2),  # S'(t)
-            beta * control * s * (e1 + e2 + i1 + i2) - alpha * e1,  # E1'(t)
+            -beta * control * s * (i1 + i2 + i3),  # S'(t)
+            beta * control * s * (i1 + i2 + i3) - alpha * e1,  # E1'(t)
             alpha * e1 - alpha * e2,  # E2'(t)
             alpha * e2 - gamma * i1,  # I1'(t)
             gamma * i1 - gamma * i2,  # I2'(t)
-            gamma * i2,  # R(t)
-            beta * s * (i1 + i2)  # C'(t)
+            gamma * i2 - gamma * i3,  # I3'(t)
+            gamma * i3,  # R(t)
+            beta * s * (i1 + i2 + i3)  # C'(t)
         ]
         return model_eq
 
