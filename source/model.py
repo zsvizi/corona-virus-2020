@@ -9,7 +9,7 @@ R_0 = 2.6
 
 
 class EpidemicModel:
-    def __init__(self, init_values=None, t_star=None):
+    def __init__(self, init_values=None, t_star=None, r_0=None):
         if init_values is None:
             init_values = {"s0": [100], "e0": [1, 0], "i0": [0, 0, 0], "r0": [0], "c0": [0]}
         self.susceptible = Susceptible(init_values["s0"])
@@ -20,6 +20,7 @@ class EpidemicModel:
         self.params = Parameters()
         self.parameter_init()
         self.t_star = t_star
+        self.r_0 = r_0
 
     def get_model(self, xs, t, ps):
         """
@@ -36,7 +37,10 @@ class EpidemicModel:
         if self.t_star is None:
             control = 1
         else:
-            control = 1 - min(1 / R_0, 1 / R_0 / self.t_star * t)
+            r0_to_reach = 0.5
+            slope = (self.r_0 - 1) / (self.r_0 * self.t_star)
+            y_to_reach = (self.r_0 - r0_to_reach) / self.r_0
+            control = 1 - min(y_to_reach, slope * t)
         model_eq = [
             -beta * control * s * (i1 + i2 + i3),  # S'(t)
             beta * control * s * (i1 + i2 + i3) - alpha * e1,  # E1'(t)

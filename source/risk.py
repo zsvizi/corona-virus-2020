@@ -60,6 +60,7 @@ def compute_risk(r_stars, connectivity_ratio, solution, max_number=100):
 
 
 def get_combinations(r_locs, r_stars, connectivity_ratio):
+    # DIMENSIONS: r_stars x theta x z
     all_combinations_array = [r_stars, connectivity_ratio, r_locs]
     all_combinations = np.array(list(itertools.product(*all_combinations_array)))
     return all_combinations

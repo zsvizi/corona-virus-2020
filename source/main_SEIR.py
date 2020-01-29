@@ -14,7 +14,7 @@ plt.style.use('ggplot')
 def main():
     bool_fit = False
     bool_solve_orig_seir = True
-    bool_solve_controlled_seir = False
+    bool_solve_controlled_seir = True
 
     if bool_fit:
         fitting()
@@ -57,23 +57,40 @@ def solve_orig_seir():
     return init_for_control
 
 
-def plot_cumulative(cumulative, t):
-    plt.plot(t, cumulative, '-', linewidth=2)
-    plt.xlabel("Time (days)")
-    plt.ylabel("Cumulative number of infected cases")
-    plt.savefig("..\\data\\solution_SEIR_orig.png", format="png")
-    plt.savefig("..\\data\\solution_SEIR_orig.eps", format="eps")
-    plt.show()
-
-
-def plot_all(solution, t):
-    plt.plot(t, solution[:, 1:], linewidth=2)
-    plt.xlabel("Time (days)")
-    plt.ylabel("State values")
-    plt.legend(('E1(t)', 'E2(t)', 'I1(t)', 'I2(t)', 'I3(t)', 'R(t)', 'C(t)'), loc='upper left')
-    plt.savefig("..\\data\\solution_SEIR_orig_all.png", format="png")
-    plt.savefig("..\\data\\solution_SEIR_orig_all.eps", format="eps")
-    plt.show()
+def solve_controlled_seir(init_for_control):
+    hubei_population = 59170000
+    # Hopkins: 23.01.2020. total number of infected = 865, infected cases NOT from Hubei province = 316
+    outside_hubei_ratio = 316 / 865
+    init = outside_hubei_ratio * init_for_control
+    s0 = chn_population - (hubei_population - np.sum((1-outside_hubei_ratio) * init_for_control[1:-1]))
+    # Set rates for generated data
+    incubation_period = 5
+    infectious_period = 10
+    r_0_list = [1.95, 2.15, 2.13, 2.2, 2.6, 2.9]
+    for r_0 in r_0_list:
+        beta = r_0 / (chn_population * infectious_period)
+        alpha = 1 / (incubation_period / number_of_E_compartments)
+        gamma = 1 / (infectious_period / number_of_I_compartments)
+        params = np.array((beta, alpha, gamma))
+        # Set initial values
+        init_values = {"s0": [s0],
+                       "e0": [init[1], init[2]],
+                       "i0": [init[3], init[4], init[5]],
+                       "r0": [init[6]],
+                       "c0": [init[7]]
+                       }
+        # Instantiate epidemic model
+        sols = []
+        for t_star in np.arange(10, 51, 1):
+            model = EpidemicModel(init_values, t_star=t_star, r_0 = r_0)
+            x0 = np.array(model.get_initial_values())
+            r0_to_reach = 0.1
+            endtime = t_star * (r_0 - r0_to_reach)/(r_0 - 1)
+            # Solve epidemic model
+            t = np.linspace(0, 10*t_star, 100000)
+            solution = solve_model(t, x0, params, model)
+            sols.append(solution)
+            plot_and_save_fig(t, solution, r_0, t_star)
 
 
 def print_endpoint(solution, cumulative, t):
@@ -91,9 +108,36 @@ def print_endpoint(solution, cumulative, t):
     return solution[index]
 
 
-def solve_controlled_seir(init_for_control):
-    print(init_for_control)
-    return
+def plot_cumulative(cumulative, t):
+    plt.plot(t, cumulative, '-', linewidth=2)
+    plt.xlabel("Time (days)")
+    plt.ylabel("Cumulative number of infected cases")
+    plt.savefig("..\\data\\original_model\\solution_SEIR_orig.png", format="png")
+    plt.savefig("..\\data\\original_model\\solution_SEIR_orig.eps", format="eps")
+    # plt.show()
+
+
+def plot_all(solution, t):
+    plt.plot(t, solution[:, 1:], linewidth=2)
+    plt.xlabel("Time (days)")
+    plt.ylabel("State values")
+    plt.legend(('E1(t)', 'E2(t)', 'I1(t)', 'I2(t)', 'I3(t)', 'R(t)', 'C(t)'), loc='upper left')
+    plt.savefig("..\\data\\original_model\\solution_SEIR_orig_all.png", format="png")
+    plt.savefig("..\\data\\original_model\\solution_SEIR_orig_all.eps", format="eps")
+    # plt.show()
+
+
+def plot_and_save_fig(t, solution, r_0, t_star):
+    plt.plot(t, solution[:, 1:], linewidth=2)
+    plt.xlabel("Time (days)")
+    plt.ylabel("State values")
+    plt.legend(('E1(t)', 'E2(t)', 'I1(t)', 'I2(t)', 'I3(t)', 'R(t)', 'C(t)'), loc='upper left')
+    plt.savefig("..\\data\\controlled_models\\solution_SEIR_control_R0_" + str(r_0) + "_t_" + str(t_star) + "_all.png",
+                format="png")
+    plt.savefig("..\\data\\controlled_models\\solution_SEIR_control_R0_" + str(r_0) + "_t_" + str(t_star) + "_all.eps",
+                format="eps")
+    plt.close()
+    print("R0 =", r_0, "t_star =", t_star)
 
 
 def fitting():
