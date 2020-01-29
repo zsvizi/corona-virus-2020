@@ -8,8 +8,8 @@ import matplotlib.ticker as ticker
 from source.risk import get_heatmap
 
 
-param = 2
-coords = [0, 1]
+param = 0
+coords = [1, 2]
 vals = [1.05]
 filename = "..\\data\\teszt_2.txt"
 
@@ -24,9 +24,9 @@ def get_data(path):
         t_star = coord_list[2]
         del coord_list[:3]
     else:
-        coord_list, t_star, theta, r_loc = get_heatmap()
+        coord_list, r_loc, theta, t_star = get_heatmap()
     
-    return [[t_star, theta, r_loc], coord_list]
+    return [[r_loc, theta, t_star], coord_list]
 
 
 def read_data(path):
@@ -68,7 +68,7 @@ def plot_heatmap(dat,i,foldr):
                 lst.append(row[-1])
         Z.append(lst)
     """
-    dat = np.array(dat[0:, -1]).reshape(len(X), len(Y))
+    dat = np.array(dat[:, -1]).reshape(len(X), len(Y))
     Z = dat.T
 
     fig, ax = plt.subplots()
