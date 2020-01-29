@@ -29,8 +29,15 @@ Extremal cases:
 """
 
 
-def generator_function(z, r_loc):
+def generator_function_poisson(z, r_loc):
     return np.exp(r_loc * (z - 1))
+
+
+def generator_function_neg_binom(z, r_loc):
+    # (p*z / (1 - (1-p)*z))**n
+    # p*n / (1-p) = r_loc
+    p = 0.5
+    return np.power((p*z) / (1 - (1-p)*z), (r_loc * (1-p)) / p)
 
 
 def compute_risk(number_of_branches, solution):
@@ -40,8 +47,8 @@ def compute_risk(number_of_branches, solution):
     return risk_ravel
 
 
-def get_combinations(connectivity_ratio, r_locs, r_stars):
-    all_combinations_array = [r_locs, r_stars, connectivity_ratio]
+def get_combinations(r_stars, connectivity_ratio, r_locs):
+    all_combinations_array = [r_stars, connectivity_ratio, r_locs]
     all_combinations = np.array(list(itertools.product(*all_combinations_array)))
     return all_combinations
 
@@ -53,29 +60,56 @@ def compute_p(r_stars, connectivity_ratio):
 
 
 def compute_z(r_locs):
-    solution = optimize.fixed_point(generator_function, 0.5 * np.ones(r_locs.shape[0]), args=(r_locs,))
+    solution = optimize.fixed_point(generator_function_poisson, 0.5 * np.ones(r_locs.shape[0]), args=(r_locs,))
     return solution
 
 
-def main():
+def get_heatmap():
     # Compute z
-    r_locs = np.array([0.8, 1.2, 1.6, 2.0])
+    r_locs = np.arange(1.05, 1.1, 0.05)
     z = compute_z(r_locs)
 
     # Compute p
-    r_stars = np.array([1000, 1500, 2500])
-    connectivity_ratio = np.array([0.2, 0.5, 0.75, 0.9, 0.95])
+    # t_stars = np.arange(10, 40, 2)
+    r_stars = np.arange(1000, 1300, 0.01)
+    connectivity_ratio = np.arange(0, 0.2, 0.01)
     p = compute_p(r_stars, connectivity_ratio)
 
     # Get all combinations of variables
-    all_combinations = get_combinations(connectivity_ratio, r_locs, r_stars)
+    # Dimensions: r_stars x connectivity_ratio x r_locs
+    all_combinations = get_combinations(r_stars=r_stars,
+                                        connectivity_ratio=connectivity_ratio,
+                                        r_locs=r_locs)
 
     # Compute risks for possible combinations
     risk_ravel = compute_risk(p, z)
 
+    return np.append(all_combinations, risk_ravel, axis=1), r_stars, connectivity_ratio, r_locs
+
+
+def write_file(connectivity_ratio, heat_map, r_locs, r_stars):
+    with open("..\\data\\teszt_2.txt", "a+") as file:
+        file.write(str(r_locs)[1:-1])
+        file.write("\n")
+
+        file.write(str(connectivity_ratio)[1:-1])
+        file.write("\n")
+
+        file.write(str(r_stars)[1:-1])
+        file.write("\n")
+
+        for vector in heat_map:
+            file.write(str(vector)[1:-1])
+            file.write("\n")
+
+
+def main():
+
     # Get heat map
-    heat_map = np.append(all_combinations, risk_ravel, axis=1)
-    print(heat_map)
+    heat_map, connectivity_ratio, r_locs, r_stars = get_heatmap()
+    print(heat_map.shape)
+
+    write_file(connectivity_ratio, heat_map, r_locs, r_stars)
 
 
 if __name__ == "__main__":

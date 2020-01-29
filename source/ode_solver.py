@@ -3,8 +3,8 @@ from lmfit import minimize, report_fit
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 import numpy as np
-
-from source.model import EpidemicModel
+import csv
+from source.model import EpidemicModel, number_of_I_compartments, number_of_E_compartments, get_init_values
 
 plt.style.use('ggplot')
 
@@ -21,8 +21,12 @@ def main():
 
 
 def fit_model():
-    # generate data
-    t, data, init_values = generate_data()
+    # Load data
+    t, data, init_values = load_data('..\\data\\cases_first_period.txt')
+    test = False
+    if test:
+        # generate data
+        t, data, init_values = generate_data()
     # Instantiate epidemic model
     model = EpidemicModel(init_values)
     # fit model and find predicted values
@@ -32,18 +36,27 @@ def fit_model():
 
 def generate_data():
     # Set rates for generated data
-    beta, alpha, gamma = 0.8, 0.1, 0.1
+    beta, alpha, gamma = 0.7, 0.25/number_of_E_compartments, 0.5/number_of_I_compartments
     true_params = np.array((beta, alpha, gamma))
     # Instantiate epidemic model
     model = EpidemicModel()
     # Get initial values
     x0 = np.array(model.get_initial_values())
     # Solve epidemic model
-    t = np.linspace(0, 50, 100)
+    t = np.linspace(0, 10, 10)
     data = solve_model(t, x0, true_params, model)
     # Perturbate with random noise
     data += np.random.normal(size=data.shape)
-    return t, data, None
+    return t, data[:, -2:], None
+
+
+def load_data(path):
+    with open(path, 'r') as f:
+        reader = csv.reader(f, delimiter=';')
+        data = np.array(list(reader)).astype(float)
+    t = data[1:, 0]
+    init_values, data_to_fit = get_init_values(data)
+    return t, data_to_fit, init_values
 
 
 def fit_and_predict(data, t, model):
@@ -56,8 +69,9 @@ def fit_and_predict(data, t, model):
 
 def compute_residual(params, ts, data, model):
     x0 = model.get_initial_values()
-    model = solve_model(ts, x0, params, model)
-    return (model - data).ravel()
+    sol = solve_model(ts, x0, params, model)
+    sol_fit = np.vstack([sol[0, -1:].reshape(-1, 1), np.diff(sol[:, -1], axis=0).reshape(-1, 1)])
+    return (sol_fit - data).ravel()
 
 
 def solve_model(t, x0, params, model):
@@ -71,6 +85,7 @@ def solve_model(t, x0, params, model):
 def plot_result(data, final, t):
     plt.plot(t, data, 'o')
     plt.plot(t, final, '-', linewidth=2)
+    plt.savefig("..\\data\\fitting.png", format="png")
     plt.show()
 
 
