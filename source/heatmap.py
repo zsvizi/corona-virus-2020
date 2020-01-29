@@ -7,7 +7,7 @@ import matplotlib.ticker as ticker
 
 from source.risk import get_heatmap
 
-# DIMENSIONS: r_stars x theta x z
+# DIMENSIONS: r_star (final size at t_star, later maybe t_star) x connectivity (theta) x r_loc (~z)
 param = 0
 coords = [1, 2]
 vals = [1.05]
@@ -15,7 +15,7 @@ filename = "..\\data\\teszt_2.txt"
 
 
 def get_data(path):
-
+    max_number_summands = 100
     read = False
     if read:
         coord_list = read_data(path)
@@ -24,7 +24,7 @@ def get_data(path):
         t_star = coord_list[2]
         del coord_list[:3]
     else:
-        coord_list, r_loc, theta, t_star = get_heatmap()
+        coord_list, t_star, theta, r_loc = get_heatmap(max_number_summands)
     
     return [[r_loc, theta, t_star], coord_list]
 

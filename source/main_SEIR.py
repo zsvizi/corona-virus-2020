@@ -62,13 +62,14 @@ def solve_controlled_seir(init_for_control):
     # Hopkins: 23.01.2020. total number of infected = 865, infected cases NOT from Hubei province = 316
     outside_hubei_ratio = 316 / 865
     init = outside_hubei_ratio * init_for_control
-    s0 = chn_population - (hubei_population - np.sum((1-outside_hubei_ratio) * init_for_control[1:-1]))
+    s0 = chn_population - (hubei_population - np.sum((1 - outside_hubei_ratio) * init_for_control[1:-1]))
     # Set rates for generated data
     incubation_period = 5
     infectious_period = 10
     r_0_list = [1.95, 2.15, 2.13, 2.2, 2.6, 2.9]
+    solutions = []
     for r_0 in r_0_list:
-        beta = r_0 / (chn_population * infectious_period)
+        beta = r_0 / ((chn_population - hubei_population) * infectious_period)
         alpha = 1 / (incubation_period / number_of_E_compartments)
         gamma = 1 / (infectious_period / number_of_I_compartments)
         params = np.array((beta, alpha, gamma))
@@ -82,15 +83,31 @@ def solve_controlled_seir(init_for_control):
         # Instantiate epidemic model
         sols = []
         for t_star in np.arange(10, 51, 1):
-            model = EpidemicModel(init_values, t_star=t_star, r_0 = r_0)
+            model = EpidemicModel(init_values, t_star=t_star, r_0=r_0)
             x0 = np.array(model.get_initial_values())
             r0_to_reach = 0.1
-            endtime = t_star * (r_0 - r0_to_reach)/(r_0 - 1)
+            endtime = t_star * (r_0 - r0_to_reach) / (r_0 - 1)
             # Solve epidemic model
-            t = np.linspace(0, 10*t_star, 100000)
+            t = np.linspace(0, 10 * t_star, 100000)
             solution = solve_model(t, x0, params, model)
             sols.append(solution)
             plot_and_save_fig(t, solution, r_0, t_star)
+        solutions.append(sols)
+    cases_after_23jan = {"0": 316, "0.5": 367, "1": 591,
+                         "1.5": 638, "2": 1004, "2.5": 1314, "3": 1402, "3.5": 1815}
+    for idx in np.arange(len(r_0_list)):
+        best_sol_idx = find_closest_solution(solutions[idx], cases_after_23jan)
+        print("Best t* for R0=", r_0_list[idx], "is:", np.arange(10, 51, 1)[best_sol_idx])
+
+
+def find_closest_solution(solution, cases: dict):
+    best_sol_idx = 0
+    t_star = 10
+    for sol in solution:
+        for t in cases.keys():
+            index = (10 * t_star)/100000
+        t_star += 1
+    return best_sol_idx
 
 
 def print_endpoint(solution, cumulative, t):

@@ -24,7 +24,7 @@ def get_heatmap(max_number_summands):
     risk_ravel = compute_risk(r_stars=r_stars, connectivity_ratio=connectivity_ratio, solution=z,
                               max_number=max_number_summands)
 
-    return np.append(all_combinations, risk_ravel, axis=1), connectivity_ratio, r_locs, r_stars
+    return np.append(all_combinations, risk_ravel, axis=1), r_stars, connectivity_ratio, r_locs
 
 
 def compute_z(r_locs):
@@ -34,16 +34,16 @@ def compute_z(r_locs):
 
 def generator_function_neg_binom(z, r_loc):
     # Parameters: k (dispersion), p
-    # Mean: p*k/(1-p) = r_loc -> p = r_loc / (k + r_loc)
+    # Mean: (1-p)*k/p = r_loc -> p = k / (k + r_loc)
     # PGF:((1-p) / (1 - p*z))**k
     # Dispersion parameter - TO BE DETERMINED
     k = 2.2
-    p = r_loc / (k + r_loc)
-    return np.power((1 - p) / (1 - p * z), k)
+    p = k / (k + r_loc)
+    return np.power(p / (1 - (1 - p) * z), k)
 
 
 def compute_risk(r_stars, connectivity_ratio, solution, max_number=100):
-    # DIMENSIONS: r_stars x theta x z
+    # DIMENSIONS: r_star (final size at t_star, later maybe t_star) x connectivity (theta) x r_loc (~z)
     risk = np.zeros((len(r_stars), len(connectivity_ratio), len(solution)))
     j, k = [0, 0]
     for r_star in r_stars:
