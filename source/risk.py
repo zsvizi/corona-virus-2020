@@ -60,14 +60,14 @@ def compute_risk(r_stars, connectivity_ratio, solution, max_number=100):
 
 
 def get_combinations(r_locs, r_stars, connectivity_ratio):
-    # DIMENSIONS: r_stars x theta x z
+    # DIMENSIONS: r_star (final size at t_star, later maybe t_star) x connectivity (theta) x r_loc (~z)
     all_combinations_array = [r_stars, connectivity_ratio, r_locs]
     all_combinations = np.array(list(itertools.product(*all_combinations_array)))
     return all_combinations
 
 
 def write_file(connectivity_ratio, heat_map, r_locs, r_stars):
-    with open("..\\data\\teszt_2.txt", "a+") as file:
+    with open("../data/heatmap_to_save.txt", "a+") as file:
         file.write(str(r_locs)[1:-1])
         file.write("\n")
 
@@ -92,7 +92,7 @@ def compute_p(r_stars, connectivity_ratio):
     return number_of_branches
 
 
-def test(heat_map, connectivity_ratio, r_locs, r_stars, max_number_summands):
+def test(heat_map, r_stars, connectivity_ratio, r_locs, max_number_summands):
     cr_index = int(math.ceil(len(connectivity_ratio)/2))
     rl_index = int(math.ceil(len(r_locs) / 2))
     rs_index = int(math.ceil(len(r_stars) / 2))
@@ -111,10 +111,10 @@ def test(heat_map, connectivity_ratio, r_locs, r_stars, max_number_summands):
 def main():
     max_number_summands = 100
     # Get heat map
-    heat_map, connectivity_ratio, r_locs, r_stars = get_heatmap(max_number_summands)
+    heat_map, r_stars, connectivity_ratio, r_locs = get_heatmap(max_number_summands)
     print(heat_map.shape)
 
-    test(heat_map, connectivity_ratio, r_locs, r_stars, max_number_summands)
+    test(heat_map, r_stars, connectivity_ratio, r_locs, max_number_summands)
     # write_file(connectivity_ratio, heat_map, r_locs, r_stars)
 
 

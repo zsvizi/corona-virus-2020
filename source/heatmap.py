@@ -11,7 +11,7 @@ from source.risk import get_heatmap
 param = 0
 coords = [1, 2]
 vals = [1.05]
-filename = "..\\data\\teszt_2.txt"
+filename = "../data/heatmap_to_save.txt"
 
 
 def get_data(path):

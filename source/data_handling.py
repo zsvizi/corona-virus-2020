@@ -1,8 +1,18 @@
 import csv
 import numpy as np
 
-from source.fit import solve_model
+from source.main_SEIR import solve_model
 from source.model import number_of_E_compartments, number_of_I_compartments, EpidemicModel
+
+
+def get_data(path):
+    # Load data
+    t, data = load_data(path)
+    test = False
+    if test:
+        # generate data
+        t, data = generate_data()
+    return t, data
 
 
 def generate_data():
