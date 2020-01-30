@@ -1,6 +1,7 @@
 from scipy import optimize
 from scipy.stats import binom
 import math
+import random
 import numpy as np
 import itertools
 
@@ -26,7 +27,7 @@ def get_heatmap(max_number_summands):
 
     heatmap = {"heatmap": np.append(all_combinations, risk_ravel, axis=1), "r_stars": r_stars,
                "theta": connectivity_ratio, "r_locs": r_locs}
-    return heatmap
+    return heatmap, order
 
 
 def compute_z(r_locs):
@@ -56,7 +57,7 @@ def compute_risk(r_stars, connectivity_ratio, solution, max_number=100):
             k += 1
         j += 1
     # Order of previous loops determines order of variables
-    order = {"r_locs": 0, "connectivity_ratio": 1, "r_stars": 2}
+    order = {"r_locs": 2, "connectivity_ratio": 1, "r_stars": 0}
     risk_ravel = risk.reshape((-1, 1))
     return risk_ravel, order
 
@@ -97,37 +98,65 @@ def compute_p(r_stars, connectivity_ratio):
     return number_of_branches
 
 
-def test(heat_map, r_stars, connectivity_ratio, r_locs, max_number_summands):
+def test(heat_map, r_stars, connectivity_ratio, r_locs, max_number_summands, order):
+    """
     cr_index = int(math.ceil(len(connectivity_ratio)/2))
-    rl_index = int(math.ceil(len(r_locs) / 2))
-    rs_index = int(math.ceil(len(r_stars) / 2))
-    cr_element = connectivity_ratio[cr_index]
-    rl_element = r_locs[rl_index]
-    rs_element = r_stars[rs_index]
-    z = compute_z(np.array([rl_element]))
-    expected = np.dot(np.array(binom.pmf(np.arange(max_number_summands), rs_element, cr_element)),
-                      1 - z ** np.arange(max_number_summands))
-    res_index = ((rs_index * len(connectivity_ratio) * len(r_locs)) + (cr_index * len(r_locs)) + rl_index)
-    result = heat_map[res_index, -1]
-    print("Expected:", expected)
-    print("Result:", result)
+    rl_index = int(math.ceil(len(r_locs) / 3))
+    rs_index = int(math.ceil(len(r_stars) / 4))
+    """
+    passed = True
+    number_of_tests = 1000
+    for _ in np.arange(number_of_tests):
+        cr_len = len(connectivity_ratio)
+        rl_len = len(r_locs)
+        rs_len = len(r_stars)
+        lengths = [0, 0, 0]
+        lengths[order["r_stars"]] = rs_len
+        lengths[order["connectivity_ratio"]] = cr_len
+        lengths[order["r_locs"]] = rl_len
+
+        cr_index = random.randint(0, cr_len-1)
+        rl_index = random.randint(0, rl_len-1)
+        rs_index = random.randint(0, rs_len-1)
+        indices = [0, 0, 0]
+        indices[order["r_stars"]] = rs_index
+        indices[order["connectivity_ratio"]] = cr_index
+        indices[order["r_locs"]] = rl_index
+
+        cr_element = connectivity_ratio[cr_index]
+        rl_element = r_locs[rl_index]
+        rs_element = r_stars[rs_index]
+
+        z = compute_z(np.array([rl_element]))
+        expected = np.dot(np.array(binom.pmf(np.arange(max_number_summands), rs_element, cr_element)),
+                          1 - z ** np.arange(max_number_summands))
+        res_index = ((rs_index * cr_len * rl_len) + (cr_index * rl_len) + rl_index)
+        result = heat_map[res_index, -1]
+        if abs(result - expected) > 10**(-5):
+            break
+            passed = False
+            print("Test failed")
+    if passed:
+        print("Test passed!")
 
 
 def main():
     max_number_summands = 100
     # Get heat map
-    heatmap = get_heatmap(max_number_summands)
+    heatmap, order = get_heatmap(max_number_summands)
     heat_map = heatmap["heatmap"]
     r_stars = heatmap["r_stars"]
     connectivity_ratio = heatmap["theta"]
     r_locs = heatmap["r_locs"]
+    # Check shape of heatmap
     print(heat_map.shape)
 
     test(heat_map=heat_map,
          r_stars=r_stars,
          connectivity_ratio=connectivity_ratio,
          r_locs=r_locs,
-         max_number_summands=max_number_summands)
+         max_number_summands=max_number_summands,
+         order=order)
 
 
 if __name__ == "__main__":

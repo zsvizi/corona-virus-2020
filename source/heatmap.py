@@ -24,7 +24,7 @@ def get_data(path):
         t_star = coord_list[0]
         del coord_list[:3]
     else:
-        heatmap = get_heatmap(max_number_summands)
+        heatmap, _ = get_heatmap(max_number_summands)
         t_star = heatmap["r_stars"]
         theta = heatmap["theta"]
         r_loc = heatmap["r_locs"]
