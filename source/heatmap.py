@@ -19,14 +19,14 @@ def get_data(path):
     read = False
     if read:
         coord_list = read_data(path)
-        r_loc = coord_list[0]
+        r_loc = coord_list[2]
         theta = coord_list[1]
-        t_star = coord_list[2]
+        t_star = coord_list[0]
         del coord_list[:3]
     else:
         coord_list, t_star, theta, r_loc = get_heatmap(max_number_summands)
     
-    return [[r_loc, theta, t_star], coord_list]
+    return [[t_star, theta, r_loc], coord_list]
 
 
 def read_data(path):
