@@ -15,16 +15,18 @@ def get_heatmap(max_number_summands):
     r_stars = np.arange(1000, 10000, 100)
     connectivity_ratio = np.arange(0, 0.2, 0.01)
 
+    # Compute risks for possible combinations
+    risk_ravel, order = compute_risk(r_stars=r_stars, connectivity_ratio=connectivity_ratio, solution=z,
+                                     max_number=max_number_summands)
+
     # Get all combinations of variables
     all_combinations = get_combinations(r_locs=r_locs,
                                         connectivity_ratio=connectivity_ratio,
-                                        r_stars=r_stars)
+                                        r_stars=r_stars, order=order)
 
-    # Compute risks for possible combinations
-    risk_ravel = compute_risk(r_stars=r_stars, connectivity_ratio=connectivity_ratio, solution=z,
-                              max_number=max_number_summands)
-
-    return np.append(all_combinations, risk_ravel, axis=1), r_stars, connectivity_ratio, r_locs
+    heatmap = {"heatmap": np.append(all_combinations, risk_ravel, axis=1), "r_stars": r_stars,
+               "theta": connectivity_ratio, "r_locs": r_locs}
+    return heatmap
 
 
 def compute_z(r_locs):
@@ -53,15 +55,18 @@ def compute_risk(r_stars, connectivity_ratio, solution, max_number=100):
             risk[j, k, :] = np.dot(np.array(probs), 1 - solution ** np.arange(max_number).reshape(-1, 1))
             k += 1
         j += 1
-    # risk_arrays = [1 - x ** r_stars for x in z]
-    # risk = np.stack(risk_arrays, axis=0)
+    # Order of previous loops determines order of variables
+    order = {"r_locs": 0, "connectivity_ratio": 1, "r_stars": 2}
     risk_ravel = risk.reshape((-1, 1))
-    return risk_ravel
+    return risk_ravel, order
 
 
-def get_combinations(r_locs, r_stars, connectivity_ratio):
+def get_combinations(r_locs, r_stars, connectivity_ratio, order):
     # DIMENSIONS: r_star (final size at t_star, later maybe t_star) x connectivity (theta) x r_loc (~z)
-    all_combinations_array = [r_stars, connectivity_ratio, r_locs]
+    all_combinations_array = [[], [], []]
+    all_combinations_array[order["r_stars"]] = r_stars
+    all_combinations_array[order["connectivity_ratio"]] = connectivity_ratio
+    all_combinations_array[order["r_locs"]] = r_locs
     all_combinations = np.array(list(itertools.product(*all_combinations_array)))
     return all_combinations
 
@@ -111,11 +116,18 @@ def test(heat_map, r_stars, connectivity_ratio, r_locs, max_number_summands):
 def main():
     max_number_summands = 100
     # Get heat map
-    heat_map, r_stars, connectivity_ratio, r_locs = get_heatmap(max_number_summands)
+    heatmap = get_heatmap(max_number_summands)
+    heat_map = heatmap["heatmap"]
+    r_stars = heatmap["r_stars"]
+    connectivity_ratio = heatmap["theta"]
+    r_locs = heatmap["r_locs"]
     print(heat_map.shape)
 
-    test(heat_map, r_stars, connectivity_ratio, r_locs, max_number_summands)
-    # write_file(connectivity_ratio, heat_map, r_locs, r_stars)
+    test(heat_map=heat_map,
+         r_stars=r_stars,
+         connectivity_ratio=connectivity_ratio,
+         r_locs=r_locs,
+         max_number_summands=max_number_summands)
 
 
 if __name__ == "__main__":
