@@ -7,12 +7,8 @@ from source.utils import plot_final_sizes, plot_and_save_all, plot_final_sizes_i
 
 
 def main():
-    # Booleans for turning on/off cases
-    bool_solve_controlled_seir = True
-
     # Solve controlled SEIR
-    if bool_solve_controlled_seir:
-        solve_controlled_seir()
+    solve_controlled_seir()
 
 
 def solve_controlled_seir():
@@ -61,7 +57,7 @@ def solve_controlled_seir():
             fs.append(solution[-1, -1])
 
             # Plot solutions and save figures
-            # plot_and_save_all(t, solution, r_0, t_star)
+            plot_and_save_all(t, solution, r_0, t_star)
 
         # Store final sizes for current R0
         final_sizes.append(fs)
@@ -69,6 +65,9 @@ def solve_controlled_seir():
     for (r_0, final_size) in zip(r_0_list, final_sizes):
         plot_final_sizes(r_0, t_stars, final_size)
     plot_final_sizes_in_one(t_stars, final_sizes)
+
+    r_0_dict = {r_0_list[idx]: idx for idx in range(len(r_0_list))}
+    return t_stars, final_sizes, r_0_dict
 
 
 def solve_model(t, x0, params, model):
