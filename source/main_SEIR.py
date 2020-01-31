@@ -1,12 +1,9 @@
 from __future__ import division
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import odeint
 
 from source.model import EpidemicModel
-from source.utils import plot_final_sizes, plot_and_save_all
-
-plt.style.use('ggplot')
+from source.utils import plot_final_sizes, plot_and_save_all, plot_final_sizes_in_one
 
 
 def main():
@@ -64,13 +61,14 @@ def solve_controlled_seir():
             fs.append(solution[-1, -1])
 
             # Plot solutions and save figures
-            plot_and_save_all(t, solution, r_0, t_star)
+            # plot_and_save_all(t, solution, r_0, t_star)
 
         # Store final sizes for current R0
         final_sizes.append(fs)
     # Plot and save t_star vs. final size figures for all R0s
     for (r_0, final_size) in zip(r_0_list, final_sizes):
         plot_final_sizes(r_0, t_stars, final_size)
+    plot_final_sizes_in_one(t_stars, final_sizes)
 
 
 def solve_model(t, x0, params, model):
