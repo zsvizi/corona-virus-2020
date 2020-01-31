@@ -31,19 +31,18 @@ class EpidemicModel:
         if self.t_star is None:
             control = 1
         else:
-            r0_to_reach = 0.5
+            maximal_control = 0.8
             slope = (self.r_0 - 1) / (self.r_0 * self.t_star)
-            y_to_reach = (self.r_0 - r0_to_reach) / self.r_0
-            control = 1 - min(y_to_reach, slope * t)
+            control = 1 - min(maximal_control, slope * t)
         model_eq = [
             -beta * control * s * (i1 + i2 + i3),  # S'(t)
-            beta * control * s * (i1 + i2 + i3) - alpha * e1,  # E1'(t)
-            alpha * e1 - alpha * e2,  # E2'(t)
-            alpha * e2 - gamma * i1,  # I1'(t)
-            gamma * i1 - gamma * i2,  # I2'(t)
-            gamma * i2 - gamma * i3,  # I3'(t)
-            gamma * i3,  # R(t)
-            beta * s * (i1 + i2 + i3)  # C'(t)
+            beta * control * s * (i1 + i2 + i3) - number_of_E_compartments * alpha * e1,  # E1'(t)
+            number_of_E_compartments * alpha * e1 - number_of_E_compartments * alpha * e2,  # E2'(t)
+            number_of_E_compartments * alpha * e2 - number_of_I_compartments * gamma * i1,  # I1'(t)
+            number_of_I_compartments * gamma * i1 - number_of_I_compartments * gamma * i2,  # I2'(t)
+            number_of_I_compartments * gamma * i2 - number_of_I_compartments * gamma * i3,  # I3'(t)
+            number_of_I_compartments * gamma * i3,  # R(t)
+            control * beta * s * (i1 + i2 + i3)  # C'(t)
         ]
         return model_eq
 
