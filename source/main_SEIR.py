@@ -17,11 +17,11 @@ def solve_controlled_seir():
     chn_population = 1437000000
     population = chn_population - hubei_population
     # Set time intervals
-    incubation_period = 4.8
+    incubation_period = 5.174
     # List of R0s
     r_0_list = [2.1, 2.6, 3.1]
     # List of infectious periods associated to R0s
-    infectious_period_list = [2.8, 4, 5.1]
+    infectious_period_list = [2.4, 3.7, 4.9]
     # Initial list for final sizes determined per R0 and t*
     final_sizes = []
     # List of t*-s
