@@ -35,8 +35,7 @@ def solve_controlled_seir():
         # Set initial values
         init_values = {"e0": [6000, 7500],
                        "i0": [1750, 1560, 1413],
-                       "r0": [0],
-                       "c0": [4723]
+                       "r0": [0]
                        }
         not_susceptible = sum([item for sublist in init_values.values() for item in sublist])
         init_values.update({"s0": [population - not_susceptible]})
@@ -53,7 +52,7 @@ def solve_controlled_seir():
             solution = solve_model(t, x0, params, model)
             # Save solution for current t_star
             sols.append(solution)
-            # Save final size for current t_star
+            # Save final size for current t_star (recovered cases)
             fs.append(solution[-1, -1])
 
             # Plot solutions and save figures

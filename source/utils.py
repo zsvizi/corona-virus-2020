@@ -6,7 +6,7 @@ def plot_and_save_all(t, solution, r_0, t_star):
     plt.plot(t, solution[:, 1:], linewidth=2)
     plt.xlabel("Time (days)")
     plt.ylabel("State values")
-    plt.legend(('E1(t)', 'E2(t)', 'I1(t)', 'I2(t)', 'I3(t)', 'R(t)', 'C(t)'), loc='upper right')
+    plt.legend(('E1(t)', 'E2(t)', 'I1(t)', 'I2(t)', 'I3(t)', 'R(t)'), loc='upper right')
     plt.savefig("..\\data\\controlled_models\\solution_SEIR_control_R0_" + str(r_0) + "_t_" + str(t_star) + "_all.png",
                 format="png")
     plt.savefig("..\\data\\controlled_models\\solution_SEIR_control_R0_" + str(r_0) + "_t_" + str(t_star) + "_all.eps",
