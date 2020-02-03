@@ -31,6 +31,34 @@ class EpidemicModel:
             control = 1
         else:
             maximal_control = 0.8
+            slope = maximal_control / self.t_star
+            control = 1 - min(maximal_control, slope * t)
+        model_eq = [
+            -beta * control * s * (i1 + i2 + i3),  # S'(t)
+            beta * control * s * (i1 + i2 + i3) - number_of_E_compartments * alpha * e1,  # E1'(t)
+            number_of_E_compartments * alpha * e1 - number_of_E_compartments * alpha * e2,  # E2'(t)
+            number_of_E_compartments * alpha * e2 - number_of_I_compartments * gamma * i1,  # I1'(t)
+            number_of_I_compartments * gamma * i1 - number_of_I_compartments * gamma * i2,  # I2'(t)
+            number_of_I_compartments * gamma * i2 - number_of_I_compartments * gamma * i3,  # I3'(t)
+            number_of_I_compartments * gamma * i3,  # R(t)
+        ]
+        return model_eq
+
+    def get_model_2(self, t, xs, ps):
+        """
+        Epidemic model
+        """
+        try:
+            alpha, gamma = ps['alpha'].value, ps['gamma'].value
+            beta = ps['beta'].value
+        except:
+            beta, alpha, gamma = ps
+
+        s, e1, e2, i1, i2, i3, r = xs
+        if self.t_star is None:
+            control = 1
+        else:
+            maximal_control = 0.8
             slope = (self.r_0 - 1) / (self.r_0 * self.t_star)
             control = 1 - min(maximal_control, slope * t)
         model_eq = [
