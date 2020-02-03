@@ -1,6 +1,6 @@
 from __future__ import division
 import numpy as np
-from scipy.integrate import odeint, solve_ivp
+from scipy.integrate import odeint
 
 from source.model import EpidemicModel
 from source.utils import plot_final_sizes, plot_and_save_all, plot_final_sizes_in_one
@@ -20,16 +20,12 @@ def solve_controlled_seir():
     incubation_period = 5.1
     # List of R0s
     r_0_list = [2.1, 2.6, 3.1]
-    # r_0_list = [3.1]
     # List of infectious periods associated to R0s
     infectious_period_list = [1.7, 3.3, 5.6]
-    # infectious_period_list = [5.6]
     # Initial values for exposed classes
     exposed_class_init = [[24163.0, 4619.0], [27504.0, 4538.0], [32677.0, 4088.0]]
-    # exposed_class_init = [[32677.0, 4088.0]]
     # Initial values for infected classes
     infected_class_init = [[4619.0, 18.0, 14.0], [4538.0, 2.0, 1.0], [4088.0, 90.0, 0.0]]
-    # infected_class_init = [[4088.0, 90.0, 0.0]]
     # Initial list for final sizes determined per R0 and t*
     final_sizes = []
     # List of t*-s
@@ -57,13 +53,10 @@ def solve_controlled_seir():
             # Solve epidemic model
             t = np.linspace(0, 200, 100000)
             solution = solve_model(t, x0, params, model)
-            # solution = solve_model(t, x0, params, model)
             # Save final size for current t_star (recovered cases)
-            # fs.append(solution.y[-1, -1])
             fs.append(solution[-1, -1])
 
             # Plot solutions and save figures
-            # plot_and_save_all(t, solution.y.T, r_0, t_star)
             plot_and_save_all(t, solution, r_0, t_star)
 
         # Store final sizes for current R0
@@ -83,14 +76,6 @@ def solve_model(t, x0, params, model):
     Solution to the ODE x'(t) = f(t,x,k) with initial condition x(0) = x0
     """
     x = odeint(model.get_model, x0, t, args=(params,))
-    return x
-
-
-def solve_model_2(t, x0, params, model):
-    """
-    Solution to the ODE x'(t) = f(t,x,k) with initial condition x(0) = x0
-    """
-    x = solve_ivp(fun=model.get_model_2, t_span=[min(t), max(t)], y0=x0, t_eval=t, args=(params,))
     return x
 
 

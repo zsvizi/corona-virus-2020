@@ -7,11 +7,11 @@ import matplotlib.ticker as ticker
 
 from source.risk import get_heatmap
 
-# DIMENSIONS: r_star (final size at t_star, later maybe t_star) x connectivity (theta) x r_loc (~z)
+# DIMENSIONS: t_star x connectivity (theta) x r_loc (~z)
 param = 0
 coords = [1, 2]
 vals = [1.05]
-filename = "../data/heatmap_to_save.txt"
+filename = "../data"
 
 
 def get_data(path):
@@ -25,7 +25,7 @@ def get_data(path):
         del coord_list[:3]
     else:
         heatmap, _ = get_heatmap(max_number_summands)
-        t_star = heatmap["r_stars"]
+        t_star = heatmap["t_stars"]
         theta = heatmap["theta"]
         r_loc = heatmap["r_locs"]
         coord_list = heatmap["heatmap"]
