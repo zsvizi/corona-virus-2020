@@ -5,4 +5,4 @@ Run ```install.bat``` to create virtual environment on Windows.
 
 Run ```install.sh``` to create virtual environment on Linux/Mac.
 
-nCoVtransmission.nb is a Mathematica file containing model fitting functionalities.
+```sources/nCoVtransmission.nb``` is a Mathematica file containing model fitting functionalities.
