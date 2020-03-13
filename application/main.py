@@ -16,20 +16,20 @@ from .utils import EpidemicModel, solve_model
 hungary_population = 9667595
 t_range = 200
 pop_dict = {"Magyarország": 1,
-            "Budapest": 5,
-            "Debrecen": 100}
+            "Budapest": 1/5,
+            "Debrecen": 1/100}
 r0_list = [2.1, 2.8]
-y_range = 200
+y_range = 300
 
 
 def model_solution(t, r_0, comp, city):
     # Set time intervals
     infectious_period = 3.3
     incubation_period = 5.1
-    exposed_init = np.array([2.0, 0.0])/city
-    infected_init = np.array([0.0, 0.0, 0.0])/city
+    exposed_init = np.array([2.0, 0.0])*city
+    infected_init = np.array([0.0, 0.0, 0.0])*city
     t_star = 50
-    city_population = hungary_population/city
+    city_population = hungary_population*city
 
     beta = r_0 / (city_population * infectious_period)
     alpha = 1 / incubation_period
