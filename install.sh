@@ -7,9 +7,9 @@ echo ""
 
 echo "Checking python version..."
 # This line is to force everyone to use a similar version of Python
-VERSION=$(python3.7 --version)
-if [[ ${VERSION} != *"Python 3.7"* ]]; then
-    echo "ERROR! Python 3.7.x is required"
+VERSION=$(python3.6 --version)
+if [[ ${VERSION} != *"Python 3.6"* ]]; then
+    echo "ERROR! Python 3.6.x is required"
     exit 1
 fi
 

@@ -18,7 +18,7 @@ t_range = 200
 pop_dict = {"Magyarország": 1,
             "Budapest": 1/5,
             "Debrecen": 1/100}
-r0_list = [2.1, 2.8]
+r0_list = [2.1, 2.8, 3.2]
 y_range = 300
 
 
@@ -58,7 +58,7 @@ def model_solution(t, r_0, comp, city):
 
 # Set up widgets
 # ip = Slider(title="Incubation period", value=5.1, start=5.0, end=14.0, step=0.1)
-button = RadioButtonGroup(labels=["R0=2.1", "R0=2.8"], active=0)
+button = RadioButtonGroup(labels=['R0=' + str(r0) for r0 in r0_list], active=0)
 select = Select(title="Város:", value="Magyarország", options=["Magyarország", "Budapest", "Debrecen"])
 
 # Initial plot
