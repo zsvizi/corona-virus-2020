@@ -24,6 +24,7 @@ class EpidemicModel:
         self.exposed = Exposed(init_values["e0"])
         self.infected = Infected(init_values["i0"])
         self.recovered = Recovered(init_values["r0"])
+        self.cumulative = Cumulative(init_values["c0"])
         self.t_star = t_star
         self.r_0 = r_0
 
@@ -37,7 +38,7 @@ class EpidemicModel:
         except:
             beta, alpha, gamma = ps
 
-        s, e1, e2, i1, i2, i3, r = xs
+        s, e1, e2, i1, i2, i3, r, c = xs
         if self.t_star is None:
             control = 1
         else:
@@ -52,6 +53,7 @@ class EpidemicModel:
             number_of_I_compartments * gamma * i1 - number_of_I_compartments * gamma * i2,  # I2'(t)
             number_of_I_compartments * gamma * i2 - number_of_I_compartments * gamma * i3,  # I3'(t)
             number_of_I_compartments * gamma * i3,  # R(t)
+            number_of_E_compartments * alpha * e2,  # C'(t),
         ]
         return model_eq
 
@@ -60,6 +62,7 @@ class EpidemicModel:
         init_values.extend(self.exposed.get_initial_values())
         init_values.extend(self.infected.get_initial_values())
         init_values.extend(self.recovered.get_initial_values())
+        init_values.extend(self.cumulative.get_initial_values())
         return init_values
 
 
@@ -93,3 +96,11 @@ class Recovered:
 
     def get_initial_values(self):
         return self.r0
+
+
+class Cumulative:
+    def __init__(self, c0):
+        self.c0 = c0
+
+    def get_initial_values(self):
+        return self.c0
