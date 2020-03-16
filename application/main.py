@@ -3,6 +3,7 @@
 # from folder ./corona-virus-2020
 
 import numpy as np
+import time
 
 from bokeh.embed import server_document
 from bokeh.io import curdoc
@@ -12,10 +13,11 @@ from bokeh.plotting import figure
 
 from .utils import EpidemicModel, solve_model
 
+start_time = time.time()
 
 # Set up global variables
 hungary_population = 9667595
-t_range = 200
+t_range = 100
 pop_dict = {"Magyarország": 1,
             "Budapest": 1/5,
             "Debrecen": 1/100}
@@ -27,14 +29,15 @@ def model_solution(t, r_0, comp, city):
     # Set time intervals
     infectious_period = 3.3
     incubation_period = 5.1
+    # Set model parameters
+    alpha = 1 / incubation_period
+    gamma = 1 / infectious_period
+    t_star = 50
     exposed_init = np.array([2.0, 0.0])*city
     infected_init = np.array([0.0, 0.0, 0.0])*city
-    t_star = 50
     city_population = hungary_population*city
 
     beta = r_0 / (city_population * infectious_period)
-    alpha = 1 / incubation_period
-    gamma = 1 / infectious_period
     params = np.array((beta, alpha, gamma))
     # Set initial values
     init_values = {"e0": exposed_init,
@@ -63,7 +66,7 @@ button = RadioButtonGroup(labels=['R0=' + str(r0) for r0 in r0_list], active=0)
 select = Select(title="Város:", value="Magyarország", options=["Magyarország", "Budapest", "Debrecen"])
 
 # Initial plot
-x = np.linspace(0, t_range, 100000)
+x = np.linspace(0, t_range, 1000)
 y = model_solution(x,
                    comp='C',
                    r_0=r0_list[button.active],
@@ -74,7 +77,6 @@ y = model_solution(x,
                    r_0=r0_list[button.active],
                    city=pop_dict[select.value])
 source_2 = ColumnDataSource(data=dict(x=x, y=y))
-
 
 # Set up plot
 plot_1 = figure(plot_height=600, plot_width=600, title="Járványterjedési modell ",
@@ -105,7 +107,7 @@ def update_data(attrname, old, new):
     sel_val = select.value
     active = button.active
     # Generate the new curve
-    x = np.linspace(0, t_range, 100000)
+    x = np.linspace(0, t_range, 1000)
 
     y = model_solution(x,
                        r_0=r0_list[active],
@@ -119,8 +121,7 @@ def update_data(attrname, old, new):
     source_2.data = dict(x=x, y=y)
 
 
-for w in [select]:
-    w.on_change('value', update_data)
+select.on_change('value', update_data)
 button.on_change('active', update_data)
 
 # Set up layouts and add to document
@@ -128,5 +129,7 @@ inputs = column(button, select)
 
 curdoc().add_root(row(inputs, tabs, width=1200))
 curdoc().title = "SEIR"
+
+# print(time.time() - start_time)
 
 script = server_document("http://covid.barthabrothers.com/bseir")
