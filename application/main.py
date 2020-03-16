@@ -4,6 +4,7 @@
 
 import numpy as np
 
+from bokeh.embed import server_document
 from bokeh.io import curdoc
 from bokeh.layouts import column, row
 from bokeh.models import ColumnDataSource, Slider, RadioButtonGroup, Tabs, Panel, Select
@@ -127,3 +128,5 @@ inputs = column(button, select)
 
 curdoc().add_root(row(inputs, tabs, width=1200))
 curdoc().title = "SEIR"
+
+script = server_document("http://covid.barthabrothers.com/bseir")
