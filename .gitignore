@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# PyCharm idea files
+/.idea
+
+# data
+/data/controlled_models
+/data/final_size
