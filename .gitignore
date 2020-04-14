@@ -11,5 +11,4 @@ venv.bak/
 /.idea
 
 # data
-/data/controlled_models
-/data/final_size
+/plots
